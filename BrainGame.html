@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>Canvas 01</title>
+    <meta charset="UTF-8">
+</head>
+<style>
+    body {
+        margin:0px;
+        background:#D0D0D0;
+        /*cursor: url(cursor2.cur),auto; */
+    }
+    #myCanvas {
+        background:#ffffff; border:#909090 1px solid;
+    }
+</style>
+<body>
+<canvas id="myCanvas" width="1500" height="900">x</canvas>
+<script>
+
+    let canvas = document.getElementById("myCanvas");
+    let draw = canvas.getContext("2d");
+    let canvasWidth = canvas.width;
+    let canvasHeight = canvas.height;
+    var playerX = canvasWidth / 2;
+    var playerY = canvasHeight * 0.9;
+    var playerDx = 0;
+    var playerDy = 0;
+    var time = 0;
+    var vecJump = 0;
+    var platforms = [];
+
+    function playerMove() {
+        draw.beginPath();
+        draw.fillStyle = "blue";
+        gravity();
+        jump();
+        collision();
+        var x = playerX += 5*playerDx;
+        var y = playerY += playerDy;
+        draw.arc(x, y, 15, 0, Math.PI*2);
+        draw.fill();
+    }
+    function display() {
+        //draw.clearRect(0, 0, canvasWidth, canvasHeight);
+        draw.fillStyle = "#92E1E2";
+        draw.fillRect(0, 0, canvasWidth ,canvasHeight)
+        drawPlatform();
+    }
+    function gravity() {
+        if (playerY <= canvasHeight - 20) {
+            playerDy = 5 * time * time;
+            time += 0.03;
+        } else {
+            playerDy = 0;
+            time = 0;
+        }
+
+    }
+    function jump() {
+        playerDy += -vecJump / 5 + (playerDy);
+
+        if (vecJump > 0) {
+            vecJump -= 9.8 * time * 30 / 60;
+        } else {
+            vecJump = 0;
+        }
+    }
+    function main() {
+        display();
+        playerMove();
+    }
+
+    function addPlatform(x, y){
+        platforms.push({"x" : x-15, "y" : y-15, "width" : 30, "height" : 30});
+        console.log("drawRect");
+    }
+
+    function deletePlatform(x, y) {
+        for (var i in platforms){
+            if(platforms[i].x <= x && x <= platforms[i].x + 30 && platforms[i].y <= y && y <= platforms[i].y + 30){
+                platforms.splice(i,1);
+            }
+        }
+    }
+
+    function drawPlatform(){
+        for(var i in platforms){
+            draw.fillStyle = "black";
+            draw.fillRect(platforms[i].x,platforms[i].y,platforms[i].width,platforms[i].height);
+        }
+    }
+
+    function collision(){
+        for(var i in platforms) {
+            //collision from left
+            if(platforms[i].x - 20 <= playerX && playerX <= platforms[i].x + 10  && platforms[i].y <= playerY && playerY <= platforms[i].y + 30){
+                console.log("collision left");
+                playerX = platforms[i].x - 20;
+            }
+            //collision from right
+            if(platforms[i].x + 10  <= playerX && playerX <= platforms[i].x + 50 && platforms[i].y <= playerY && playerY <= platforms[i].y + 30){
+                console.log("collision right");
+                playerX = platforms[i].x + 50;
+            }
+            //collision form top
+            if(platforms[i].x - 5 <= playerX && playerX <= platforms[i].x + 35 && platforms[i].y - 20 <= playerY && playerY <= platforms[i].y + 10){
+                console.log("collision top","DY : "+playerDy,"time : "+time,"vecJump : "+vecJump);
+                playerY = platforms[i].y - 20;
+                time = 0;
+            }
+            //collision form bottom
+            if(platforms[i].x - 5 <= playerX && playerX <= platforms[i].x + 35 && platforms[i].y + 10 <= playerY && playerY <= platforms[i].y + 50){
+                console.log("collision bottom","DY : "+playerDy,"time : "+time,"vecJump : "+vecJump);
+                playerY = platforms[i].y + 50;
+                vecJump = 0;
+            }
+        }
+    }
+
+    let mainSchedule = setInterval(main, 20);
+
+    document.body.addEventListener('keydown', (arg)=>{
+        console.log("down "+arg.code,"x:" + playerX,"y:" + playerY);
+        console.log("dx:"+playerDx);
+        if(arg.code === 'KeyA' && playerDx >= 0){
+            console.log("playerDx--");
+            playerDx--;
+        }
+        if(arg.code === 'KeyD' && playerDx <= 0){
+            console.log("playerDx++");
+            playerDx++;
+        }
+        if(arg.code === 'Space'){
+            console.log("time : "+time, "DY:"+playerDy,"vecJump:"+vecJump);
+            if(playerDy === 0){
+                time = 0;
+                vecJump = 50;
+            }
+            arg.preventDefault();
+        }
+    });
+
+    document.body.addEventListener('keyup', (arg)=>{
+        console.log("up "+arg.code,"x:" + playerX,"y:" + playerY);
+        console.log("dx:"+playerDx);
+        if(arg.code === 'KeyA'){
+            playerDx++;
+        }
+        if(arg.code === 'KeyD'){
+            playerDx--;
+        }
+    });
+
+    canvas.addEventListener('click',(arg)=>{
+        console.log("click X:" + arg.clientX,"click Y:" + arg.clientY);
+        addPlatform(arg.clientX,arg.clientY);
+    },false);
+
+    canvas.addEventListener('contextmenu',(arg)=>{
+        console.log("rightClick");
+        arg.preventDefault();
+        console.log("click X:" + arg.clientX,"click Y:" + arg.clientY);
+        deletePlatform(arg.clientX, arg.clientY);
+    });
+</script>
+</body>
+</html>
