@@ -27,7 +27,9 @@
     var playerDx = 0;
     var playerDy = 0;
     var playerHead = 1;
-    var playerMoveTime = 0;
+    var playerMoveTime = 10;
+    var playerMoveAction = 1;
+    var playerMoveActionSpeed = 4;
     var time = 0;
     var vecJump = 0;
     var platforms = [];
@@ -35,6 +37,16 @@
     var gamePause = 0;
     var round = 0;
     var win = 1;
+
+    var playerRightMoveImages = [];
+    var playerLeftMoveImages = [];
+    for(var i = 0; i < 10; i++){
+        playerRightMoveImages[i] = new Image();
+        playerLeftMoveImages[i] = new Image();
+        playerRightMoveImages[i].src = "resources/oguPng/ogu" + i + ".png";
+        playerLeftMoveImages[i].src = "resources/oguPng/ogu" + i + "-1.png";
+    }
+
     var playerHoldImgLeft = new Image();
     var playerHoldImgRight = new Image();
     playerHoldImgRight.src = "resources/oguPng/ogu11.png";
@@ -48,14 +60,25 @@
         jump();
         collision();
         drawPlayer();
+
+        if(playerDx !== 0){
+            playerMoveAction++;
+            if(playerMoveAction > playerMoveActionSpeed){
+                playerMoveAction = 0;
+                playerMoveTime++;
+            }
+            console.log(playerMoveTime);
+        }
     }
     function drawPlayer() {
         var x = playerX += 5*playerDx;
         var y = playerY += playerDy;
         if(playerHead === 1){
-            draw.drawImage(playerHoldImgRight,x-20,y-20,50,45);
+            draw.drawImage(playerRightMoveImages[playerMoveTime % 10],x-20,y-20,50,45);
+            //draw.drawImage(playerHoldImgRight,x-20,y-20,50,45);
         } else {
-            draw.drawImage(playerHoldImgLeft,x-20,y-20,50,45);
+            draw.drawImage(playerLeftMoveImages[playerMoveTime % 10],x-20,y-20,50,45);
+            //draw.drawImage(playerHoldImgLeft,x-20,y-20,50,45);
         }
 
         draw.fill();
@@ -243,7 +266,7 @@
             platformPush(1300,288);
             platformPushType(1298,160,9);
         }
-        if(round === 2){2
+        if(round === 2){
             platformPush(410,806);
             platformPush(575,715);
             platformPush(779,615);
