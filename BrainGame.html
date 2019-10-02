@@ -38,53 +38,14 @@
     var round = 0;
     var win = 1;
 
-
     var playerRightMoveImages = [];
-    playerRightMoveImages[0] = new Image();
-    playerRightMoveImages[0].src = "resources/oguPng/ogu0.png";
-    playerRightMoveImages[1] = new Image();
-    playerRightMoveImages[1].src = "resources/oguPng/ogu1.png";
-    playerRightMoveImages[2] = new Image();
-    playerRightMoveImages[2].src = "resources/oguPng/ogu2.png";
-    playerRightMoveImages[3] = new Image();
-    playerRightMoveImages[3].src = "resources/oguPng/ogu3.png";
-    playerRightMoveImages[4] = new Image();
-    playerRightMoveImages[4].src = "resources/oguPng/ogu4.png";
-    playerRightMoveImages[5] = new Image();
-    playerRightMoveImages[5].src = "resources/oguPng/ogu5.png";
-    playerRightMoveImages[6] = new Image();
-    playerRightMoveImages[6].src = "resources/oguPng/ogu6.png";
-    playerRightMoveImages[7] = new Image();
-    playerRightMoveImages[7].src = "resources/oguPng/ogu7.png";
-    playerRightMoveImages[8] = new Image();
-    playerRightMoveImages[8].src = "resources/oguPng/ogu8.png";
-    playerRightMoveImages[9] = new Image();
-    playerRightMoveImages[9].src = "resources/oguPng/ogu9.png";
-
     var playerLeftMoveImages = [];
-    playerLeftMoveImages[0] = new Image();
-    playerLeftMoveImages[0].src = "resources/oguPng/ogu0-1.png";
-    playerLeftMoveImages[1] = new Image();
-    playerLeftMoveImages[1].src = "resources/oguPng/ogu1-1.png";
-    playerLeftMoveImages[2] = new Image();
-    playerLeftMoveImages[2].src = "resources/oguPng/ogu2-1.png";
-    playerLeftMoveImages[3] = new Image();
-    playerLeftMoveImages[3].src = "resources/oguPng/ogu3-1.png";
-    playerLeftMoveImages[4] = new Image();
-    playerLeftMoveImages[4].src = "resources/oguPng/ogu4-1.png";
-    playerLeftMoveImages[5] = new Image();
-    playerLeftMoveImages[5].src = "resources/oguPng/ogu5-1.png";
-    playerLeftMoveImages[6] = new Image();
-    playerLeftMoveImages[6].src = "resources/oguPng/ogu6-1.png";
-    playerLeftMoveImages[7] = new Image();
-    playerLeftMoveImages[7].src = "resources/oguPng/ogu7-1.png";
-    playerLeftMoveImages[8] = new Image();
-    playerLeftMoveImages[8].src = "resources/oguPng/ogu8-1.png";
-    playerLeftMoveImages[9] = new Image();
-    playerLeftMoveImages[9].src = "resources/oguPng/ogu9-1.png";
-
-
-
+    for(var i = 0; i < 10; i++){
+        playerRightMoveImages[i] = new Image();
+        playerLeftMoveImages[i] = new Image();
+        playerRightMoveImages[i].src = "resources/oguPng/ogu" + i + ".png";
+        playerLeftMoveImages[i].src = "resources/oguPng/ogu" + i + "-1.png";
+    }
 
     var playerHoldImgLeft = new Image();
     var playerHoldImgRight = new Image();
