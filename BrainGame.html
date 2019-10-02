@@ -27,7 +27,9 @@
     var playerDx = 0;
     var playerDy = 0;
     var playerHead = 1;
-    var playerMoveTime = 0;
+    var playerMoveTime = 10;
+    var playerMoveAction = 1;
+    var playerMoveActionSpeed = 4;
     var time = 0;
     var vecJump = 0;
     var platforms = [];
@@ -35,6 +37,55 @@
     var gamePause = 0;
     var round = 0;
     var win = 1;
+
+
+    var playerRightMoveImages = [];
+    playerRightMoveImages[0] = new Image();
+    playerRightMoveImages[0].src = "resources/oguPng/ogu0.png";
+    playerRightMoveImages[1] = new Image();
+    playerRightMoveImages[1].src = "resources/oguPng/ogu1.png";
+    playerRightMoveImages[2] = new Image();
+    playerRightMoveImages[2].src = "resources/oguPng/ogu2.png";
+    playerRightMoveImages[3] = new Image();
+    playerRightMoveImages[3].src = "resources/oguPng/ogu3.png";
+    playerRightMoveImages[4] = new Image();
+    playerRightMoveImages[4].src = "resources/oguPng/ogu4.png";
+    playerRightMoveImages[5] = new Image();
+    playerRightMoveImages[5].src = "resources/oguPng/ogu5.png";
+    playerRightMoveImages[6] = new Image();
+    playerRightMoveImages[6].src = "resources/oguPng/ogu6.png";
+    playerRightMoveImages[7] = new Image();
+    playerRightMoveImages[7].src = "resources/oguPng/ogu7.png";
+    playerRightMoveImages[8] = new Image();
+    playerRightMoveImages[8].src = "resources/oguPng/ogu8.png";
+    playerRightMoveImages[9] = new Image();
+    playerRightMoveImages[9].src = "resources/oguPng/ogu9.png";
+
+    var playerLeftMoveImages = [];
+    playerLeftMoveImages[0] = new Image();
+    playerLeftMoveImages[0].src = "resources/oguPng/ogu0-1.png";
+    playerLeftMoveImages[1] = new Image();
+    playerLeftMoveImages[1].src = "resources/oguPng/ogu1-1.png";
+    playerLeftMoveImages[2] = new Image();
+    playerLeftMoveImages[2].src = "resources/oguPng/ogu2-1.png";
+    playerLeftMoveImages[3] = new Image();
+    playerLeftMoveImages[3].src = "resources/oguPng/ogu3-1.png";
+    playerLeftMoveImages[4] = new Image();
+    playerLeftMoveImages[4].src = "resources/oguPng/ogu4-1.png";
+    playerLeftMoveImages[5] = new Image();
+    playerLeftMoveImages[5].src = "resources/oguPng/ogu5-1.png";
+    playerLeftMoveImages[6] = new Image();
+    playerLeftMoveImages[6].src = "resources/oguPng/ogu6-1.png";
+    playerLeftMoveImages[7] = new Image();
+    playerLeftMoveImages[7].src = "resources/oguPng/ogu7-1.png";
+    playerLeftMoveImages[8] = new Image();
+    playerLeftMoveImages[8].src = "resources/oguPng/ogu8-1.png";
+    playerLeftMoveImages[9] = new Image();
+    playerLeftMoveImages[9].src = "resources/oguPng/ogu9-1.png";
+
+
+
+
     var playerHoldImgLeft = new Image();
     var playerHoldImgRight = new Image();
     playerHoldImgRight.src = "resources/oguPng/ogu11.png";
@@ -48,14 +99,25 @@
         jump();
         collision();
         drawPlayer();
+
+        if(playerDx !== 0){
+            playerMoveAction++;
+            if(playerMoveAction > playerMoveActionSpeed){
+                playerMoveAction = 0;
+                playerMoveTime++;
+            }
+            console.log(playerMoveTime);
+        }
     }
     function drawPlayer() {
         var x = playerX += 5*playerDx;
         var y = playerY += playerDy;
         if(playerHead === 1){
-            draw.drawImage(playerHoldImgRight,x-20,y-20,50,45);
+            draw.drawImage(playerRightMoveImages[playerMoveTime % 10],x-20,y-20,50,45);
+            //draw.drawImage(playerHoldImgRight,x-20,y-20,50,45);
         } else {
-            draw.drawImage(playerHoldImgLeft,x-20,y-20,50,45);
+            draw.drawImage(playerLeftMoveImages[playerMoveTime % 10],x-20,y-20,50,45);
+            //draw.drawImage(playerHoldImgLeft,x-20,y-20,50,45);
         }
 
         draw.fill();
@@ -243,7 +305,7 @@
             platformPush(1300,288);
             platformPushType(1298,160,9);
         }
-        if(round === 2){2
+        if(round === 2){
             platformPush(410,806);
             platformPush(575,715);
             platformPush(779,615);
