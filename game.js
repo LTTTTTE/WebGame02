@@ -39,6 +39,11 @@ for(var j = 1; j < 6; j++){
     platformImages[j].src = "resources/platforms/platform" + j + ".png";
 }
 
+var cloudImages = [];
+for (i = 1; i < 3; i++){
+    cloudImages[i] = new Image();
+    cloudImages[i].src = "resources/cloud/cloud" + i + ".png";
+}
 // var playerHoldImgLeft = new Image();
 // var playerHoldImgRight = new Image();
 // playerHoldImgRight.src = "resources/oguPng/ogu11.png";
@@ -52,6 +57,12 @@ var popupImg = new Image();
 popupImg.src = "resources/popup.png";
 var carrotImg = new Image();
 carrotImg.src = "resources/carrot.png";
+
+var clouds = [];
+clouds.push({"img":cloudImages[1], "x":188, "y":188, "d":1});
+clouds.push({"img":cloudImages[2], "x":563, "y":196, "d":-1});
+clouds.push({"img":cloudImages[1], "x":820, "y":74, "d":1});
+clouds.push({"img":cloudImages[2], "x":1112, "y":249, "d":-1});
 
 //1 : 기본, 2 : 점프대, 3 : 밟을시 부서짐, 9 : 승리마크
 function playerMove() {
@@ -70,6 +81,7 @@ function playerMove() {
         }
     }
 }
+
 function drawPlayer() {
     var x = playerX += 5*playerDx;
     var y = playerY += playerDy;
@@ -88,11 +100,13 @@ function display() {
     drawBackground();
     drawPlatform();
     drawInventory();
+    drawCloud();
     if(win === 1) showWin();
 }
 function drawBackground() {
     draw.drawImage(backgroundImg,0,0,canvasWidth,canvasHeight);
 }
+
 function drawPopup() {
     draw.drawImage(popupImg,610,370,280,210);
 }
@@ -105,6 +119,20 @@ function drawInventory(){
     draw.fillText("x"+inventory[0],121,48);
     draw.fillText("x"+inventory[1],227,48);
     draw.fillText("x"+inventory[2],333,48);
+}
+
+function drawCloud() {
+    for (i = 0; i < clouds.length; i++){
+        draw.drawImage(clouds[i].img,clouds[i].x,clouds[i].y,200,80);
+        if(clouds[i].x < 0){
+            clouds[i].d = 1;
+        }
+        if(clouds[i].x > canvasWidth){
+            clouds[i].d = -1;
+        }
+        clouds[i].x += clouds[i].d;
+    }
+
 }
 
 function gravity() {
@@ -382,6 +410,8 @@ document.body.addEventListener('keyup', (arg)=>{
 });
 
 canvas.addEventListener('click',(arg)=>{
+    console.log("click X:" + arg.clientX,"click Y:" + arg.clientY);
+
     if(arg.clientX < 400 && arg.clientY < 90){
         if(arg.clientX >= 70 && arg.clientX <= 114 && arg.clientY >= 28 && arg.clientY <= 68){
             platformType = 1;
@@ -407,7 +437,7 @@ canvas.addEventListener('click',(arg)=>{
     if(gamePause === 1 || round === 0){
         return;
     }
-    console.log("click X:" + arg.clientX,"click Y:" + arg.clientY);
+
     addPlatform(arg.clientX,arg.clientY);
 }, false);
 
