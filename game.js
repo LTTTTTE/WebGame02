@@ -144,9 +144,9 @@ function drawBullets() {
     for(i = 0; i < bullets.length; i++){
         draw.drawImage(bullets[i].img,bullets[i].x,bullets[i].y,20,20);
         bullets[i].x += bullets[i].dx;
-        bullets[i].dy += 500 * time * time;
+        bullets[i].dy += bullets[i].time * bullets[i].time * 25;
         bullets[i].y += bullets[i].dy;
-        bullets[i].time += 1;
+        bullets[i].time += 0.01;
 
 
         if(bullets[i].x > canvasWidth || bullets[i].x < 0 || bullets[i].y > canvasHeight){
@@ -359,7 +359,15 @@ function platformPushSize(x,y,w,h,t){
 function playerShot(x,y){
     if(bullets.length < 3){
         console.log("playerBulletsPush");
-        bullets.push({"img":nutImg, "x":playerX, "y":playerY, "tx":x, "ty":y, "dx":(x-playerX)/30, "dy":(y-playerY)/20, "time":0});
+        var bulletPosX = (x-playerX);
+        if(bulletPosX >= 300){
+            bulletPosX = 300;
+        }
+        var bulletPosY = (y-playerY);
+        if(bulletPosY <= -300){
+            bulletPosY = -300;
+        }
+        bullets.push({"img":nutImg, "x":playerX, "y":playerY, "tx":x, "ty":y, "dx":bulletPosX / 30, "dy":bulletPosY / 30, "time":0});
     }
 }
 
