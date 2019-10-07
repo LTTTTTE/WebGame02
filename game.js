@@ -57,12 +57,16 @@ var popupImg = new Image();
 popupImg.src = "resources/popup.png";
 var carrotImg = new Image();
 carrotImg.src = "resources/carrot.png";
+var nutImg = new Image();
+nutImg.src = "resources/bullet/nut.png";
 
 var clouds = [];
 clouds.push({"img":cloudImages[1], "x":188, "y":188, "d":1});
 clouds.push({"img":cloudImages[2], "x":563, "y":196, "d":-1});
 clouds.push({"img":cloudImages[1], "x":820, "y":74, "d":1});
 clouds.push({"img":cloudImages[2], "x":1112, "y":249, "d":-1});
+
+var bullets = [];
 
 //1 : 기본, 2 : 점프대, 3 : 밟을시 부서짐, 9 : 승리마크
 function playerMove() {
@@ -101,6 +105,7 @@ function display() {
     drawPlatform();
     drawInventory();
     drawCloud();
+    drawBullets();
     if(win === 1) showWin();
 }
 function drawBackground() {
@@ -133,6 +138,21 @@ function drawCloud() {
         clouds[i].x += clouds[i].d;
     }
 
+}
+
+function drawBullets() {
+    for(i = 0; i < bullets.length; i++){
+        draw.drawImage(bullets[i].img,bullets[i].x,bullets[i].y,20,20);
+        bullets[i].x += bullets[i].dx;
+        bullets[i].dy += bullets[i].time * bullets[i].time * 25;
+        bullets[i].y += bullets[i].dy;
+        bullets[i].time += 0.01;
+
+
+        if(bullets[i].x > canvasWidth || bullets[i].x < 0 || bullets[i].y > canvasHeight){
+            bullets.splice(i,1);
+        }
+    }
 }
 
 function gravity() {
@@ -336,6 +356,21 @@ function platformPushSize(x,y,w,h,t){
     platforms.push({"x": x, "y": y, "width": w, "height": h, "type" : t});
 }
 
+function playerShot(x,y){
+    if(bullets.length < 3){
+        console.log("playerBulletsPush");
+        var bulletPosX = (x-playerX);
+        if(bulletPosX >= 300){
+            bulletPosX = 300;
+        }
+        var bulletPosY = (y-playerY);
+        if(bulletPosY <= -300){
+            bulletPosY = -300;
+        }
+        bullets.push({"img":nutImg, "x":playerX, "y":playerY, "tx":x, "ty":y, "dx":bulletPosX / 30, "dy":bulletPosY / 30, "time":0});
+    }
+}
+
 let mainSchedule = setInterval(main, 20);
 
 document.body.addEventListener('keydown', (arg)=>{
@@ -411,6 +446,10 @@ document.body.addEventListener('keyup', (arg)=>{
 
 canvas.addEventListener('click',(arg)=>{
     console.log("click X:" + arg.clientX,"click Y:" + arg.clientY);
+    if(arg.buttons === 4){
+        arg.preventDefault();
+        alert("middle");
+    }
 
     if(arg.clientX < 400 && arg.clientY < 90){
         if(arg.clientX >= 70 && arg.clientX <= 114 && arg.clientY >= 28 && arg.clientY <= 68){
@@ -450,3 +489,8 @@ canvas.addEventListener('contextmenu',(arg)=>{
     console.log("click X:" + arg.clientX,"click Y:" + arg.clientY);
     deletePlatform(arg.clientX, arg.clientY);
 }, false);
+
+canvas.addEventListener('wheel',(arg)=>{
+    playerShot(arg.x,arg.y);
+    arg.preventDefault();
+});
