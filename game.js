@@ -44,10 +44,24 @@ for (i = 1; i < 3; i++){
     cloudImages[i] = new Image();
     cloudImages[i].src = "resources/cloud/cloud" + i + ".png";
 }
-// var playerHoldImgLeft = new Image();
-// var playerHoldImgRight = new Image();
-// playerHoldImgRight.src = "resources/oguPng/ogu11.png";
-// playerHoldImgLeft.src = "resources/oguPng/ogu11-1.png";
+
+var enemy1Images = [];
+for (i = 0; i < 48; i++){
+    enemy1Images[i] = new Image();
+    enemy1Images[i].src = "resources/enemy/1/enemy1_" + i + ".png";
+}
+
+var enemy2Images = [];
+for (i = 0; i < 86; i++){
+    enemy2Images[i] = new Image();
+    enemy2Images[i].src = "resources/enemy/2/enemy2_" + i + ".png";
+}
+
+var firework1Images = [];
+for (i = 0; i < 40; i++){
+    firework1Images[i] = new Image();
+    firework1Images[i].src = "resources/firework1/firework1_" + i + ".png";
+}
 
 var backgroundImg = new Image();
 backgroundImg.src = "resources/background.jpg";
@@ -59,6 +73,18 @@ var carrotImg = new Image();
 carrotImg.src = "resources/carrot.png";
 var nutImg = new Image();
 nutImg.src = "resources/bullet/nut.png";
+var bananaImg = new Image();
+bananaImg.src = "resources/bullet/banana.png";
+var cheeryImg = new Image();
+cheeryImg.src = "resources/bullet/cheery.png";
+var grapeImg = new Image();
+grapeImg.src = "resources/bullet/grape.png";
+
+var bulletImages = [];
+bulletImages.push(nutImg);
+bulletImages.push(bananaImg);
+bulletImages.push(cheeryImg);
+bulletImages.push(grapeImg);
 
 var clouds = [];
 clouds.push({"img":cloudImages[1], "x":188, "y":188, "d":1});
@@ -67,7 +93,12 @@ clouds.push({"img":cloudImages[1], "x":820, "y":74, "d":1});
 clouds.push({"img":cloudImages[2], "x":1112, "y":249, "d":-1});
 
 var bullets = [];
+var enemies = [];
+var hitObjects = [];
+var winFireWorks = [];
 
+
+//enemies.push({"img":2,"x":1000, "y":100, "dx":0, "dy":0, "time":0, "frame":86});
 //1 : 기본, 2 : 점프대, 3 : 밟을시 부서짐, 9 : 승리마크
 function playerMove() {
     draw.beginPath();
@@ -106,8 +137,14 @@ function display() {
     drawInventory();
     drawCloud();
     drawBullets();
+    drawEnemy();
+    hitEnemy();
+    hitPlayer();
+    drawHitAnimation();
+    drawWinFireWork();
     if(win === 1) showWin();
 }
+
 function drawBackground() {
     draw.drawImage(backgroundImg,0,0,canvasWidth,canvasHeight);
 }
@@ -142,15 +179,57 @@ function drawCloud() {
 
 function drawBullets() {
     for(i = 0; i < bullets.length; i++){
-        draw.drawImage(bullets[i].img,bullets[i].x,bullets[i].y,20,20);
+        draw.drawImage(bullets[i].img,bullets[i].x,bullets[i].y,30,30);
         bullets[i].x += bullets[i].dx;
         bullets[i].dy += bullets[i].time * bullets[i].time * 25;
         bullets[i].y += bullets[i].dy;
         bullets[i].time += 0.01;
 
-
         if(bullets[i].x > canvasWidth || bullets[i].x < 0 || bullets[i].y > canvasHeight){
             bullets.splice(i,1);
+        }
+    }
+}
+
+function drawEnemy() {
+    for(i = 0; i < enemies.length; i++){
+        enemies[i].time++;
+        if(enemies[i].img === 1) {
+            draw.drawImage(enemy1Images[enemies[i].time % enemies[i].frame], enemies[i].x, enemies[i].y, 120, 130);
+        }
+        if(enemies[i].img === 2) {
+            draw.drawImage(enemy2Images[enemies[i].time % enemies[i].frame], enemies[i].x, enemies[i].y, 240, 260);
+        }
+    }
+
+}
+
+function drawHitAnimation() {
+    for(i = 0; i < hitObjects.length; i ++){
+        if(hitObjects[i].time > 9){
+            hitObjects.splice(i,1);
+            continue;
+        }
+        console.log("폭팔!",hitObjects[i].x,);
+        draw.drawImage(boomImages[hitObjects[i].time],hitObjects[i].x,hitObjects[i].y,40,40);
+        hitObjects[i].temp++;
+        if(hitObjects[i].temp > 2){
+            hitObjects[i].time++;
+            hitObjects[i].temp = 0;
+        }
+    }
+}
+
+function drawWinFireWork() {
+    for(i = 0; i < winFireWorks.length; i ++){
+
+        if(winFireWorks[i].time >= 40){
+            continue;
+        }
+        draw.drawImage(firework1Images[winFireWorks[i].time],winFireWorks[i].x,winFireWorks[i].y,500,300);
+        winFireWorks[i].temp++;
+        if(winFireWorks[i].temp > 3){
+            winFireWorks[i].time++;
         }
     }
 }
@@ -291,6 +370,7 @@ function breakPlatform(){
 function winLogic(i){
     if(platforms[i].type === 9){
         console.log("winRound");
+        winFireWorks.push({"x":platforms[i].x - 250, "y":platforms[i].y - 150, "time":0, "temp":0});
         platforms.splice(i,1);
         win = 1;
         return true;
@@ -323,6 +403,7 @@ function showPauseMenu(){
 
 function setRound(){
     platforms = [];
+    enemies = [];
     playerX = 50;
     playerY = canvasHeight * 0.95;
     console.log("라운드 : "+round + ", win = "+win);
@@ -334,6 +415,7 @@ function setRound(){
         platformPush(1155,420);
         platformPush(1300,288);
         platformPushType(1298,160,9);
+        enemies.push({"img":1,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":48, "hp":10});
     }
     if(round === 2){
         inventory = [1,0,0];
@@ -367,7 +449,42 @@ function playerShot(x,y){
         if(bulletPosY <= -300){
             bulletPosY = -300;
         }
-        bullets.push({"img":nutImg, "x":playerX, "y":playerY, "tx":x, "ty":y, "dx":bulletPosX / 30, "dy":bulletPosY / 30, "time":0});
+        bullets.push({"img":bulletImages[Math.floor(Math.random()*4)], "x":playerX, "y":playerY, "tx":x, "ty":y, "dx":bulletPosX / 30, "dy":bulletPosY / 30, "time":0});
+    }
+}
+
+function addEnemy(x,y){
+    enemies.push({"img":1,"x":x, "y":y, "dx":0, "dy":0, "time":0, "frame":48, "hp": 10});
+    enemies.push({"img":2,"x":x, "y":y, "dx":0, "dy":0, "time":0, "frame":87, "hp": 100});
+}
+
+function hitEnemy(){
+    for(j = 0; j < enemies.length; j++){
+        if(enemies[j].hp <= 0){
+            enemies.splice(j,1);
+            continue;
+        }
+        for(i = 0; i < bullets.length; i++){
+            if(bullets[i].x <= enemies[j].x + 120 && bullets[i].x >= enemies[j].x &&
+                bullets[i].y <= enemies[j].y + 130 && bullets[i].y >= enemies[j].y){
+                enemyHitAnimation(bullets[i].x,bullets[i].y);
+                bullets.splice(i,1);
+                enemies[j].hp--;
+            }
+        }
+    }
+}
+
+function enemyHitAnimation(x,y){
+    hitObjects.push({"x":x, "y":y, "time":0, "temp":0});
+}
+
+function hitPlayer(){
+    for(j = 0; j < enemies.length; j++){
+        if(playerX <= enemies[j].x + 120 && playerX >= enemies[j].x &&
+            playerY <= enemies[j].y + 130 && playerY >= enemies[j].y){
+            setRound();
+        }
     }
 }
 
@@ -385,6 +502,10 @@ document.body.addEventListener('keydown', (arg)=>{
         console.log("playerDx++");
         playerHead = 1;
         playerDx++;
+    }
+    if(arg.code === 'KeyR' && playerDx <= 0){
+        console.log("Replay");
+        setRound();
     }
     if(arg.code === 'Digit1'){
         platformType = 1;
