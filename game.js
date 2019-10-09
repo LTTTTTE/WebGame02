@@ -18,7 +18,7 @@ var platforms = [];
 var inventory = [0,1,1];
 var platformType = 7;
 var gamePause = 0;
-var round = 4;
+var round = 0;
 var win = 1;
 
 var playerRightMoveImages = [];
@@ -95,6 +95,12 @@ grapeImg.src = "resources/bullet/grape.png";
 var bearImg = new Image();
 bearImg.src = "resources/enemy/bear.png";
 
+var tutoImages = [];
+for(i = 0; i < 6; i++){
+    tutoImages[i] = new Image();
+    tutoImages[i].src = "resources/tutorial/tuto" + i + ".png";
+}
+
 var carrotImages = [];
 for (i = 0; i < 13; i++){
     carrotImages[i] = new Image();
@@ -138,6 +144,7 @@ function display() {
     drawBackground();
     drawPlatform();
     drawInventory();
+    drawTutorial();
     drawCloud();
     drawBullets();
     drawEnemy();
@@ -298,6 +305,28 @@ function drawEnemyBullets() {
     }
 }
 
+function drawTutorial() {
+    if(round === 1 && playerX < 300){
+        draw.drawImage(tutoImages[0], playerX - 150, playerY - 200, 200, 160);
+    }
+    if(round === 1 && playerX >= 300 && playerX < 800){
+        draw.drawImage(tutoImages[1], playerX - 150, playerY - 200, 200, 160);
+    }
+    if(round === 1 && playerX >= 800 && playerX < 1100){
+        draw.drawImage(tutoImages[2], playerX - 150, playerY - 200, 200, 160);
+    }
+    if(round === 1 && playerX >= 1100 && win !== 1){
+        draw.drawImage(tutoImages[3], playerX - 150, playerY - 200, 200, 160);
+    }
+    if(round === 2 && playerX >= 315 && playerX < 800 && inventory[0] > 2 && canvas.style.cursor !== "url(\"resources/cursor/platform1.cur\"), auto"){
+        draw.drawImage(tutoImages[4], 80, 88, 200, 160);
+    } else if(round === 2 && playerX >= 315 && playerX < 800 && inventory[0] > 2){
+        draw.drawImage(tutoImages[4], 635, 724, 200, 160);
+    }
+
+    draw.drawImage(tutoImages[5],410, 10, 100, 100);
+}
+
 function gravity() {
     if (playerY <= canvasHeight - 20) {
         playerDy = 5 * time * time * 0.7;
@@ -336,6 +365,8 @@ function addPlatform(x, y){
     if(platformType === 9) {
         platforms.push({"x": x - 15, "y": y - 15, "width": 30, "height": 30, "type" : 9});
     }
+    canvas.style.cursor = "url(''),auto";
+    platformType = 0;
 }
 
 function deletePlatform(x, y) {
@@ -474,6 +505,7 @@ function setRound(){
     console.log("라운드 : " + round + ", win = " + win);
 
     if(round === 1){
+        playerX = 150;
         platformPush(410,806);
         platformPush(440,806);
         platformPush(575,715);
@@ -492,11 +524,13 @@ function setRound(){
     }
 
     if(round === 2){
-        inventory = [1,0,0];
+        inventory = [3,0,0];
         platformPush(410,806);
-        platformPush(575,715);
+        platformPush(440,806);
         platformPush(779,615);
+        platformPush(809,615);
         platformPush(957,525);
+        platformPush(987,525);
         platformPush(1300,288);
         enemies.push({"img":1,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":48, "hp":10});
         platformPushType(1298,160,9);
