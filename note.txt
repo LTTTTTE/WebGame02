@@ -19,7 +19,6 @@
 끝 :
 1298 160
 
-click X:188 click Y:188
-game.js:394 click X:563 click Y:196
-game.js:394 click X:820 click Y:74
-game.js:394 click X:1112 click Y:249
+
+ X:509 click Y:438
+click X:968 click Y:517
