@@ -11,13 +11,14 @@ var playerHead = 1;
 var playerMoveTime = 10;
 var playerMoveAction = 1;
 var playerMoveActionSpeed = 4;
+var globalTime= 0;
 var time = 0;
 var vecJump = 0;
 var platforms = [];
 var inventory = [0,1,1];
 var platformType = 7;
 var gamePause = 0;
-var round = 0;
+var round = 4;
 var win = 1;
 
 var playerRightMoveImages = [];
@@ -57,10 +58,22 @@ for (i = 0; i < 86; i++){
     enemy2Images[i].src = "resources/enemy/2/enemy2_" + i + ".png";
 }
 
+var enemy3Images = [];
+for (i = 0; i < 18; i++){
+    enemy3Images[i] = new Image();
+    enemy3Images[i].src = "resources/enemy/3/enemy3_" + i + ".png";
+}
+
 var firework1Images = [];
 for (i = 0; i < 40; i++){
     firework1Images[i] = new Image();
     firework1Images[i].src = "resources/firework1/firework1_" + i + ".png";
+}
+
+var firework2Images = [];
+for (i = 0; i < 45; i++){
+    firework2Images[i] = new Image();
+    firework2Images[i].src = "resources/firework2/firework2_" + i + ".png";
 }
 
 var backgroundImg = new Image();
@@ -70,7 +83,7 @@ inventoryImg.src = "resources/inventory.png";
 var popupImg = new Image();
 popupImg.src = "resources/popup.png";
 var carrotImg = new Image();
-carrotImg.src = "resources/carrot.png";
+carrotImg.src = "resources/carrot/carrot0.png";
 var nutImg = new Image();
 nutImg.src = "resources/bullet/nut.png";
 var bananaImg = new Image();
@@ -79,12 +92,26 @@ var cheeryImg = new Image();
 cheeryImg.src = "resources/bullet/cheery.png";
 var grapeImg = new Image();
 grapeImg.src = "resources/bullet/grape.png";
+var bearImg = new Image();
+bearImg.src = "resources/enemy/bear.png";
+
+var carrotImages = [];
+for (i = 0; i < 13; i++){
+    carrotImages[i] = new Image();
+    carrotImages[i].src = "resources/carrot/carrot" + i + ".png";
+}
 
 var bulletImages = [];
 bulletImages.push(nutImg);
 bulletImages.push(bananaImg);
 bulletImages.push(cheeryImg);
 bulletImages.push(grapeImg);
+
+var fireball = new Image();
+fireball.src = "resources/bullet/fireball2.png";
+
+var enemyBulletImages = [];
+enemyBulletImages.push(fireball);
 
 var clouds = [];
 clouds.push({"img":cloudImages[1], "x":188, "y":188, "d":1});
@@ -96,10 +123,33 @@ var bullets = [];
 var enemies = [];
 var hitObjects = [];
 var winFireWorks = [];
+var enemiesBullets = [];
 
 
 //enemies.push({"img":2,"x":1000, "y":100, "dx":0, "dy":0, "time":0, "frame":86});
 //1 : 기본, 2 : 점프대, 3 : 밟을시 부서짐, 9 : 승리마크
+function main() {
+    display();
+    playerMove();
+    globalTime++;
+}
+
+function display() {
+    drawBackground();
+    drawPlatform();
+    drawInventory();
+    drawCloud();
+    drawBullets();
+    drawEnemy();
+    hitEnemy();
+    hitPlayer();
+    drawHitAnimation();
+    drawWinFireWork();
+    enemyAttack();
+    drawEnemyBullets();
+    if(win === 1) showWin();
+}
+
 function playerMove() {
     draw.beginPath();
     draw.fillStyle = "blue";
@@ -129,20 +179,6 @@ function drawPlayer() {
     }
 
     draw.fill();
-}
-
-function display() {
-    drawBackground();
-    drawPlatform();
-    drawInventory();
-    drawCloud();
-    drawBullets();
-    drawEnemy();
-    hitEnemy();
-    hitPlayer();
-    drawHitAnimation();
-    drawWinFireWork();
-    if(win === 1) showWin();
 }
 
 function drawBackground() {
@@ -200,6 +236,12 @@ function drawEnemy() {
         if(enemies[i].img === 2) {
             draw.drawImage(enemy2Images[enemies[i].time % enemies[i].frame], enemies[i].x, enemies[i].y, 240, 260);
         }
+        if(enemies[i].img === 3) {
+            draw.drawImage(enemy3Images[Math.floor(enemies[i].time/3) % enemies[i].frame], enemies[i].x, enemies[i].y, 80, 120);
+        }
+        if(enemies[i].img === 4) {
+            draw.drawImage(bearImg, enemies[i].x, enemies[i].y, 120, 120);
+        }
     }
 
 }
@@ -210,7 +252,6 @@ function drawHitAnimation() {
             hitObjects.splice(i,1);
             continue;
         }
-        console.log("폭팔!",hitObjects[i].x,);
         draw.drawImage(boomImages[hitObjects[i].time],hitObjects[i].x,hitObjects[i].y,40,40);
         hitObjects[i].temp++;
         if(hitObjects[i].temp > 2){
@@ -223,13 +264,36 @@ function drawHitAnimation() {
 function drawWinFireWork() {
     for(i = 0; i < winFireWorks.length; i ++){
 
-        if(winFireWorks[i].time >= 40){
-            continue;
+
+        if(winFireWorks[i].type === 1){
+            if(winFireWorks[i].time >= 40){
+                winFireWorks.splice(i,1);
+                continue;
+            }
+            draw.drawImage(firework1Images[winFireWorks[i].time],winFireWorks[i].x,winFireWorks[i].y,500,300);
         }
-        draw.drawImage(firework1Images[winFireWorks[i].time],winFireWorks[i].x,winFireWorks[i].y,500,300);
+        if(winFireWorks[i].type === 2){
+            if(winFireWorks[i].time >= 44){
+                winFireWorks.splice(i,1);
+                continue;
+            }
+            draw.drawImage(firework2Images[winFireWorks[i].time],winFireWorks[i].x + 130,winFireWorks[i].y + 60,500,500);
+        }
         winFireWorks[i].temp++;
         if(winFireWorks[i].temp > 3){
             winFireWorks[i].time++;
+        }
+    }
+}
+
+function drawEnemyBullets() {
+    for(i = 0; i < enemiesBullets.length; i++){
+        draw.drawImage(enemyBulletImages[enemiesBullets[i].img - 1], enemiesBullets[i].x ,enemiesBullets[i].y, 30,30);
+        enemiesBullets[i].x -= enemiesBullets[i].dx + 0.7;
+        enemiesBullets[i].y -= enemiesBullets[i].dy + 0.7;
+        if(enemiesBullets[i].x < 0 || enemiesBullets[i].x > canvasWidth
+            || enemiesBullets[i].y < 0 || enemiesBullets[i].y > canvasHeight){
+            enemiesBullets.splice(i, 1);
         }
     }
 }
@@ -253,11 +317,6 @@ function jump() {
     } else {
         vecJump = 0;
     }
-}
-
-function main() {
-    display();
-    playerMove();
 }
 
 function addPlatform(x, y){
@@ -301,9 +360,13 @@ function drawPlatform(){
 
             draw.drawImage(platformImages[platforms[i].type],platforms[i].x,platforms[i].y,platforms[i].width,platforms[i].height);
         }
+        if(platforms[i].type === 5){
+
+            draw.drawImage(platformImages[platforms[i].type],platforms[i].x,platforms[i].y,platforms[i].width,platforms[i].height);
+        }
         if(platforms[i].type === 9){
 
-            draw.drawImage(carrotImg,platforms[i].x,platforms[i].y,platforms[i].width + 5,platforms[i].height + 5);
+            draw.drawImage(carrotImages[Math.floor(globalTime/2) % 13],platforms[i].x,platforms[i].y,platforms[i].width + 5,platforms[i].height + 5);
         }
     }
 }
@@ -322,25 +385,26 @@ function collision(){
                 platforms.splice(i,1);
                 break;
             }
+            if(platforms[i].type === 5){
+                setRound();
+                break;
+            }
             if(winLogic(i))break;
             console.log("collision top","DY : "+playerDy,"time : "+time,"vecJump : "+vecJump);
             playerY = platforms[i].y - 20;
             time = 0;
-            break;
         }
         //collision from left
         if(platforms[i].x - 20 <= playerX && playerX <= platforms[i].x + 10  && platforms[i].y <= playerY && playerY <= platforms[i].y + 30){
             if(winLogic(i))break;
             console.log("collision left");
             playerX = platforms[i].x - 20;
-            break;
         }
         //collision from right
         if(platforms[i].x + 10  <= playerX && playerX <= platforms[i].x + 50 && platforms[i].y <= playerY && playerY <= platforms[i].y + 30){
             if(winLogic(i))break;
             console.log("collision right");
             playerX = platforms[i].x + 50;
-            break;
         }
         //collision form bottom
         if(platforms[i].x - 5 <= playerX && playerX <= platforms[i].x + 35 && platforms[i].y + 10 <= playerY && playerY <= platforms[i].y + 50){
@@ -348,7 +412,6 @@ function collision(){
             console.log("collision bottom","DY : "+playerDy,"time : "+time,"vecJump : "+vecJump);
             playerY = platforms[i].y + 50;
             vecJump = 0;
-            break;
         }
     }
 
@@ -370,7 +433,7 @@ function breakPlatform(){
 function winLogic(i){
     if(platforms[i].type === 9){
         console.log("winRound");
-        winFireWorks.push({"x":platforms[i].x - 250, "y":platforms[i].y - 150, "time":0, "temp":0});
+        winFireWorks.push({"x":platforms[i].x - 250, "y":platforms[i].y - 150, "time":0, "temp":0, "type":1});
         platforms.splice(i,1);
         win = 1;
         return true;
@@ -404,19 +467,30 @@ function showPauseMenu(){
 function setRound(){
     platforms = [];
     enemies = [];
+    enemiesBullets = [];
+    bullets = [];
     playerX = 50;
     playerY = canvasHeight * 0.95;
-    console.log("라운드 : "+round + ", win = "+win);
+    console.log("라운드 : " + round + ", win = " + win);
+
     if(round === 1){
         platformPush(410,806);
+        platformPush(440,806);
         platformPush(575,715);
+        platformPush(605,715);
         platformPush(779,615);
+        platformPush(809,615);
         platformPush(957,525);
+        platformPush(987,525);
         platformPush(1155,420);
+        platformPush(1185,420);
         platformPush(1300,288);
+        platformPush(1330,288);
         platformPushType(1298,160,9);
-        enemies.push({"img":1,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":48, "hp":10});
+        enemies.push({"img":3,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":17, "hp":10});
+
     }
+
     if(round === 2){
         inventory = [1,0,0];
         platformPush(410,806);
@@ -424,7 +498,60 @@ function setRound(){
         platformPush(779,615);
         platformPush(957,525);
         platformPush(1300,288);
+        enemies.push({"img":1,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":48, "hp":10});
         platformPushType(1298,160,9);
+    }
+
+    if(round === 3){
+        inventory = [2,2,10];
+        for(i = 300; i < canvasHeight; i = i + 30){
+            platformPush(500,i);
+            platformPush(530,i);
+        }
+        for (i = 0; i < 700; i = i + 30){
+            platformPush(1000,i);
+        }
+        for (i = 510; i < canvasHeight; i = i + 30){
+            platformPushType(970, i, 3);
+        }
+
+        platformPushType(1298,160,9);
+        enemies.push({"img":1,"x":561, "y":236, "dx":0, "dy":0, "time":0, "frame":48, "hp":20});
+        enemies.push({"img":1,"x":1000, "y":733, "dx":0, "dy":0, "time":0, "frame":48, "hp":20});
+        enemies.push({"img":3,"x":384, "y":625, "dx":0, "dy":0, "time":0, "frame":17, "hp":10});
+    }
+
+    if(round === 4){
+        inventory = [2,1,0];
+        for(i = 250, j = 250; i < canvasWidth; i = i + 30, j = j + 170){
+            platformPushType(i,canvasHeight - 30, 5);
+            platformPush(j, canvasHeight - 90);
+        }
+        platformPushType(1440,717,2);
+        for (i = 0; i < 1300; i = i + 30){
+            platformPushType(i,580,5);
+        }
+        for (i = 0; i < 1450; i = i + 90){
+            platformPushType(i,510,3);
+        }
+        for(i = 250, j = 250; i < canvasWidth; i = i + 30, j = j + 170){
+            platformPushType(i,300, 5);
+            platformPush(j, 240);
+        }
+
+        enemies.push({"img":1,"x":1337, "y":60, "dx":0, "dy":0, "time":0, "frame":48, "hp":20});
+        enemies.push({"img":1,"x":1337, "y":672, "dx":0, "dy":0, "time":0, "frame":48, "hp":20});
+        enemies.push({"img":4,"x":107, "y":310, "dx":0, "dy":0, "time":0, "frame":48, "hp":20});
+        platformPush(106, 429);
+        platformPush(136, 429);
+        platformPush(166, 429);
+        platformPush(196, 429);
+        platformPushType(1450,80,9);
+    }
+
+    if(round === 5) {
+        inventory = [5,0,0];
+        enemies.push({"img":2,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":86, "hp": 100});
     }
 }
 
@@ -445,6 +572,9 @@ function playerShot(x,y){
         if(bulletPosX >= 300){
             bulletPosX = 300;
         }
+        if(bulletPosX <= -300){
+            bulletPosX = -300;
+        }
         var bulletPosY = (y-playerY);
         if(bulletPosY <= -300){
             bulletPosY = -300;
@@ -461,10 +591,22 @@ function addEnemy(x,y){
 function hitEnemy(){
     for(j = 0; j < enemies.length; j++){
         if(enemies[j].hp <= 0){
+            if(enemies[j].img === 2){
+                winFireWorks.push({"x":enemies[j].x - 250, "y":enemies[j].y - 150, "time":0, "temp":0, "type":2});
+            }
             enemies.splice(j,1);
             continue;
         }
         for(i = 0; i < bullets.length; i++){
+            if(enemies[j].img === 2){
+                if(bullets[i].x <= enemies[j].x + 200 && bullets[i].x >= enemies[j].x + 50 &&
+                    bullets[i].y <= enemies[j].y + 200 && bullets[i].y >= enemies[j].y + 100){
+                    enemyHitAnimation(bullets[i].x,bullets[i].y);
+                    bullets.splice(i,1);
+                    enemies[j].hp--;
+                    continue;
+                }
+            }
             if(bullets[i].x <= enemies[j].x + 120 && bullets[i].x >= enemies[j].x &&
                 bullets[i].y <= enemies[j].y + 130 && bullets[i].y >= enemies[j].y){
                 enemyHitAnimation(bullets[i].x,bullets[i].y);
@@ -484,6 +626,23 @@ function hitPlayer(){
         if(playerX <= enemies[j].x + 120 && playerX >= enemies[j].x &&
             playerY <= enemies[j].y + 130 && playerY >= enemies[j].y){
             setRound();
+        }
+    }
+
+    for(i = 0; i < enemiesBullets.length; i++){
+       if(enemiesBullets[i].x < playerX + 10 && enemiesBullets[i].x > playerX - 20 &&
+           enemiesBullets[i].y > playerY - 40 && enemiesBullets[i].y < playerY + 30){
+            setRound();
+        }
+    }
+}
+
+function enemyAttack(){
+    for(i = 0; i < enemies.length; i++){
+        if(((enemies[i].time % 400) === Math.floor(Math.random()*300)+100) && (enemies[i].img === 1)){
+            console.log("fire");
+            enemiesBullets.push({"img":1, "x":enemies[i].x, "y":enemies[i].y,
+                "dx":(enemies[i].x - playerX) / 100, "dy":(enemies[i].y - playerY) / 80});
         }
     }
 }
@@ -592,6 +751,7 @@ canvas.addEventListener('click',(arg)=>{
             return;
         }
         canvas.style.cursor = "url(''),auto";
+        platformType = 0;
         return;
     }
     if(gamePause === 1 || round === 0){
@@ -608,7 +768,8 @@ canvas.addEventListener('contextmenu',(arg)=>{
         return;
     }
     console.log("click X:" + arg.clientX,"click Y:" + arg.clientY);
-    deletePlatform(arg.clientX, arg.clientY);
+
+    //deletePlatform(arg.clientX, arg.clientY);
 }, false);
 
 canvas.addEventListener('wheel',(arg)=>{
