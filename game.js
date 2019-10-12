@@ -19,7 +19,7 @@ var inventory = [0,1,1];
 var platformType = 7;
 var gamePause = 0;
 var intro = 1;
-var round = 0;
+var round = 4;
 var win = 1;
 
 
@@ -28,12 +28,23 @@ backgroundMusic.controls = true;
 backgroundMusic.loop = true;
 
 var jumpMusic = new Audio("resources/music/jump.wav");
+var bounceMusics = [];
+for(i = 0; i < 3; i++){
+    bounceMusics[i] = new Audio("resources/music/bounce.mp3");
+}
+bounceMusics[3] = 0;
+
 var blockPlaceMusic = new Audio("resources/music/blockPlace.mp3");
 var winMusic = new Audio("resources/music/win.wav");
 var throwMusics = [];
 for(i = 0; i < 10; i ++){
     throwMusics[i] = new Audio("resources/music/throw.wav");
 }
+var hitMusics= [];
+for(i = 0; i < 15; i++){
+    hitMusics[i] = new Audio("resources/music/hit" + (i % 3) + ".wav");
+}
+hitMusics[15] = 0;
 
 var playerRightMoveImages = [];
 var playerLeftMoveImages = [];
@@ -131,6 +142,12 @@ bulletImages.push(grapeImg);
 
 var fireball = new Image();
 fireball.src = "resources/bullet/fireball2.png";
+var bossBulletImages = [];
+for(i = 0; i < 3; i++){
+    bossBulletImages[i] = new Image();
+    bossBulletImages[i].src = "resources/bullet/bossBullet" + i + ".png";
+}
+bossBulletImages[3] = 0;
 
 var enemyBulletImages = [];
 enemyBulletImages.push(fireball);
@@ -150,6 +167,7 @@ var enemiesBullets = [];
 
 //enemies.push({"img":2,"x":1000, "y":100, "dx":0, "dy":0, "time":0, "frame":86});
 //1 : 기본, 2 : 점프대, 3 : 밟을시 부서짐, 9 : 승리마크
+//적img1 : 불쏘시개 //적img2 보스 // 적img3 새 // 적img4 잠만보
 function main() {
     display();
     playerMove();
@@ -170,6 +188,7 @@ function display() {
     drawWinFireWork();
     enemyAttack();
     drawEnemyBullets();
+    bulletConflict();
     if(win === 1) showWin();
 }
 
@@ -314,7 +333,12 @@ function drawWinFireWork() {
 
 function drawEnemyBullets() {
     for(i = 0; i < enemiesBullets.length; i++){
-        draw.drawImage(enemyBulletImages[enemiesBullets[i].img - 1], enemiesBullets[i].x ,enemiesBullets[i].y, 30,30);
+        if(enemiesBullets[i].img === 2){
+            draw.drawImage(bossBulletImages[enemiesBullets[i].type], enemiesBullets[i].x ,enemiesBullets[i].y, 30,30);
+            bossBulletImages[3]++
+        } else {
+            draw.drawImage(enemyBulletImages[enemiesBullets[i].img - 1], enemiesBullets[i].x ,enemiesBullets[i].y, 30,30);
+        }
         enemiesBullets[i].x -= enemiesBullets[i].dx + 0.7;
         enemiesBullets[i].y -= enemiesBullets[i].dy + 0.7;
         if(enemiesBullets[i].x < 0 || enemiesBullets[i].x > canvasWidth
@@ -438,7 +462,7 @@ function collision(){
 
         //collision form top
         if(platforms[i].x - 5 <= playerX && playerX <= platforms[i].x + 35 && platforms[i].y - 20 <= playerY && playerY <= platforms[i].y + 10){
-            if(platforms[i].type === 2){
+            if(platforms[i].type === 2 && vecJump < 5){
                 jumpPlatform();
                 break;
             }
@@ -483,6 +507,12 @@ function collision(){
 }
 
 function jumpPlatform(){
+    bounceMusics[bounceMusics[3]%3].play().then(function() {
+        console.log("바운스음악 잘나옴");
+        bounceMusics[3]++;
+    }).catch(function(error) {
+        console.log("바운스음악 안나옴 : " + error);
+    });
     time = 0;
     vecJump = 75;
 }
@@ -623,6 +653,7 @@ function setRound(){
     if(round === 5) {
         inventory = [5,0,0];
         enemies.push({"img":2,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":86, "hp": 100});
+        platformPushType(1117,454,9);
     }
 }
 
@@ -680,6 +711,7 @@ function hitEnemy(){
                 if(bullets[i].x <= enemies[j].x + 200 && bullets[i].x >= enemies[j].x + 50 &&
                     bullets[i].y <= enemies[j].y + 200 && bullets[i].y >= enemies[j].y + 100){
                     enemyHitAnimation(bullets[i].x,bullets[i].y);
+                    enemyHitMusic();
                     bullets.splice(i,1);
                     enemies[j].hp--;
                     continue;
@@ -688,6 +720,7 @@ function hitEnemy(){
             if(bullets[i].x <= enemies[j].x + 120 && bullets[i].x >= enemies[j].x &&
                 bullets[i].y <= enemies[j].y + 130 && bullets[i].y >= enemies[j].y){
                 enemyHitAnimation(bullets[i].x,bullets[i].y);
+                enemyHitMusic();
                 bullets.splice(i,1);
                 enemies[j].hp--;
             }
@@ -697,6 +730,15 @@ function hitEnemy(){
 
 function enemyHitAnimation(x,y){
     hitObjects.push({"x":x, "y":y, "time":0, "temp":0});
+}
+
+function enemyHitMusic() {
+    hitMusics[hitMusics[15]%15].play().then(function() {
+        hitMusics[15]++;
+        console.log("hit 음악 잘나옴");
+    }).catch(function(error) {
+        console.log("hit 음악 안나옴 : " + error);
+    });
 }
 
 function hitPlayer(){
@@ -722,9 +764,26 @@ function enemyAttack(){
             enemiesBullets.push({"img":1, "x":enemies[i].x, "y":enemies[i].y,
                 "dx":(enemies[i].x - playerX) / 100, "dy":(enemies[i].y - playerY) / 80});
         }
+        if(enemies[i].img === 2 && enemies[i].time % 7 === 0){
+            enemiesBullets.push({"img":2, "x":enemies[i].x + 35, "y":enemies[i].y + 130,
+                "dx": Math.random()*(5) - 2, "dy": Math.random()*-5 + 2, "type": Math.floor(Math.random()*3)});
+        }
     }
 }
 
+function bulletConflict(){
+    for(i = 0; i < bullets.length; i++){
+        for(j = 0; j < enemiesBullets.length; j++){
+            if(enemiesBullets[j].x < bullets[i].x + 10 && enemiesBullets[j].x > bullets[i].x - 20 &&
+                enemiesBullets[j].y > bullets[i].y - 40 && enemiesBullets[j].y < bullets[i].y + 30){
+                bullets.splice(i,1);
+                enemiesBullets.splice(j,1);
+                console.log("conflict");
+                break;
+            }
+        }
+    }
+}
 
 let mainSchedule = setInterval(main, 20);
 
