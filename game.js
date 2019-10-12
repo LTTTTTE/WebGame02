@@ -19,7 +19,7 @@ var inventory = [0,1,1];
 var platformType = 7;
 var gamePause = 0;
 var intro = 1;
-var round = 4;
+var round = 2;
 var win = 1;
 
 
@@ -45,6 +45,12 @@ for(i = 0; i < 15; i++){
     hitMusics[i] = new Audio("resources/music/hit" + (i % 3) + ".wav");
 }
 hitMusics[15] = 0;
+
+var glassBreakMusics = [];
+for(i = 0; i < 6; i++){
+    glassBreakMusics[i] = new Audio("resources/music/glassBreak" + (i % 3) + ".wav");
+}
+glassBreakMusics[6] = 0;
 
 var playerRightMoveImages = [];
 var playerLeftMoveImages = [];
@@ -468,6 +474,7 @@ function collision(){
             }
             if(platforms[i].type === 3){
                 breakPlatform();
+                glassBreak();
                 platforms.splice(i,1);
                 break;
             }
@@ -783,6 +790,15 @@ function bulletConflict(){
             }
         }
     }
+}
+
+function glassBreak(){
+    glassBreakMusics[glassBreakMusics[6] % 6].play().then(function() {
+        glassBreakMusics[6]++;
+        console.log("glass Break 음악 잘나옴");
+    }).catch(function(error) {
+        console.log("glass Break 음악 안나옴 : " + error);
+    });
 }
 
 let mainSchedule = setInterval(main, 20);
