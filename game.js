@@ -18,6 +18,7 @@ var platforms = [];
 var inventory = [0,1,1];
 var platformType = 7;
 var gamePause = 0;
+var intro = 1;
 var round = 0;
 var win = 1;
 
@@ -95,6 +96,8 @@ var inventoryImg = new Image();
 inventoryImg.src = "resources/inventory.png";
 var popupImg = new Image();
 popupImg.src = "resources/popup.png";
+var introImg = new Image();
+introImg.src = "resources/intro.png";
 var carrotImg = new Image();
 carrotImg.src = "resources/carrot/carrot0.png";
 var nutImg = new Image();
@@ -206,10 +209,13 @@ function drawBackground() {
 }
 
 function drawPopup() {
-    draw.drawImage(popupImg,610,370,280,210);
+    draw.drawImage(popupImg,590,124,380,470);
 }
 
 function drawInventory(){
+    if(round === 0){
+        return;
+    }
     draw.drawImage(inventoryImg,0,0,420,100);
     draw.fillStyle = "#000000";
     draw.font = '20px Arial';
@@ -337,7 +343,14 @@ function drawTutorial() {
         draw.drawImage(tutoImages[4], 635, 724, 200, 160);
     }
 
+    if(round === 0){
+        return;
+    }
     draw.drawImage(tutoImages[5],410, 10, 100, 100);
+}
+
+function drawIntro() {
+    draw.drawImage(introImg,331,86,800,500);
 }
 
 function gravity() {
@@ -496,18 +509,14 @@ function winLogic(i){
 }
 
 function showWin() {
-    drawPopup();
-    draw.fillStyle = "#ffffff";
-    draw.font = '70px Arial';
-    draw.textBaseline = "top";
+
+    // draw.fillStyle = "#ffffff";
+    // draw.font = '70px Arial';
+    // draw.textBaseline = "top";
     if(round === 0){
-        draw.fillText("Ready", (canvasWidth - 200) / 2, (canvasHeight - 90) / 2);
-        draw.font = '25px Arial';
-        draw.fillText("START : Enter", (canvasWidth - 180) / 2, (canvasHeight - 150) / 1.5);
+        drawIntro();
     } else {
-        draw.fillText("승리!", (canvasWidth - 150) / 2, (canvasHeight - 90) / 2);
-        draw.font = '25px Arial';
-        draw.fillText("다음라운드 : Enter", (canvasWidth - 200) / 2, (canvasHeight - 150) / 1.5);
+        drawPopup();
     }
 }
 
@@ -630,7 +639,7 @@ function platformPushSize(x,y,w,h,t){
 function playerShot(x,y){
     if(bullets.length < 3){
 
-        throwMusics[globalTime % 11].play().then(function() {
+        throwMusics[globalTime % 10].play().then(function() {
             console.log("던지기음악 잘나옴");
         }).catch(function(error) {
             console.log("던지기음악 안나옴 : " + error);
@@ -805,6 +814,14 @@ canvas.addEventListener('click',(arg)=>{
         arg.preventDefault();
         alert("middle");
     }
+    if(arg.clientX >= 509 && arg.clientX <= 968 && arg.clientY >= 438 && arg.clientY <= 517 && round === 0){
+        round++;
+        win = 0;
+        setRound();
+    }
+    if(gamePause === 1 || round === 0){
+        return;
+    }
 
     if(arg.clientX < 400 && arg.clientY < 90){
         if(arg.clientX >= 70 && arg.clientX <= 114 && arg.clientY >= 28 && arg.clientY <= 68){
@@ -829,9 +846,7 @@ canvas.addEventListener('click',(arg)=>{
         platformType = 0;
         return;
     }
-    if(gamePause === 1 || round === 0){
-        return;
-    }
+
     if(canvas.style.cursor !== "url(\"\"), auto"){
         console.log(canvas.style.cursor);
         addPlatform(arg.clientX,arg.clientY);
