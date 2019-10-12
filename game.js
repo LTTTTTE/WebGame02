@@ -19,7 +19,7 @@ var inventory = [0,1,1];
 var platformType = 7;
 var gamePause = 0;
 var intro = 1;
-var round = 2;
+var round = 0;
 var win = 1;
 
 
@@ -212,6 +212,13 @@ function playerMove() {
             playerMoveAction = 0;
             playerMoveTime++;
         }
+    }
+
+    if(playerX < 18){
+        playerX = 18;
+    }
+    if(playerX > canvasWidth - 60){
+        playerX = canvasWidth - 60;
     }
 }
 
