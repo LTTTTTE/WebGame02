@@ -14,18 +14,25 @@ var playerMoveActionSpeed = 4;
 var globalTime= 0;
 var time = 0;
 var vecJump = 0;
-var platforms = [];
-var inventory = [0,1,1];
 var platformType = 7;
 var gamePause = 0;
-var intro = 1;
 var round = 0;
 var win = 1;
 
+var platforms = [];
+var bullets = [];
+var enemies = [];
+var hitObjects = [];
+var winFireWorks = [];
+var enemiesBullets = [];
+var inventory = [0,1,1];
 
 var backgroundMusic = new Audio("resources/music/backgroundMusic.mp3");
 backgroundMusic.controls = true;
 backgroundMusic.loop = true;
+
+var bossBackgroundMusic = new Audio("resources/music/bossBGM.wav");
+var endBackgroundMusic = new Audio("resources/music/endBGM.mp3");
 
 var jumpMusic = new Audio("resources/music/jump.wav");
 var bounceMusics = [];
@@ -107,6 +114,12 @@ for (i = 0; i < 45; i++){
     firework2Images[i].src = "resources/firework2/firework2_" + i + ".png";
 }
 
+var metheorImages = [];
+for(i = 0; i < 190; i++){
+    metheorImages[i] = new Image();
+    metheorImages[i].src = "resources/metheor/metheor-" + i + ".png";
+}
+
 var backgroundImg = new Image();
 backgroundImg.src = "resources/background.jpg";
 var inventoryImg = new Image();
@@ -127,6 +140,10 @@ var grapeImg = new Image();
 grapeImg.src = "resources/bullet/grape.png";
 var bearImg = new Image();
 bearImg.src = "resources/enemy/bear.png";
+var homeImg = new Image();
+homeImg.src = "resources/home.png";
+var endImg = new Image();
+endImg.src = "resources/endImg3.png";
 
 var tutoImages = [];
 for(i = 0; i < 6; i++){
@@ -164,18 +181,10 @@ clouds.push({"img":cloudImages[2], "x":563, "y":196, "d":-1});
 clouds.push({"img":cloudImages[1], "x":820, "y":74, "d":1});
 clouds.push({"img":cloudImages[2], "x":1112, "y":249, "d":-1});
 
-var bullets = [];
-var enemies = [];
-var hitObjects = [];
-var winFireWorks = [];
-var enemiesBullets = [];
 
-
-//enemies.push({"img":2,"x":1000, "y":100, "dx":0, "dy":0, "time":0, "frame":86});
-//1 : 기본, 2 : 점프대, 3 : 밟을시 부서짐, 9 : 승리마크
-//적img1 : 불쏘시개 //적img2 보스 // 적img3 새 // 적img4 잠만보
 function main() {
     display();
+    playBackgroundMusic();
     playerMove();
     globalTime++;
 }
@@ -199,8 +208,8 @@ function display() {
 }
 
 function playerMove() {
-    draw.beginPath();
-    draw.fillStyle = "blue";
+    // draw.beginPath();
+    // draw.fillStyle = "blue";
     gravity();
     jump();
     collision();
@@ -349,13 +358,21 @@ function drawEnemyBullets() {
         if(enemiesBullets[i].img === 2){
             draw.drawImage(bossBulletImages[enemiesBullets[i].type], enemiesBullets[i].x ,enemiesBullets[i].y, 30,30);
             bossBulletImages[3]++
-        } else {
+        }
+
+        if(enemiesBullets[i].img === 1){
             draw.drawImage(enemyBulletImages[enemiesBullets[i].img - 1], enemiesBullets[i].x ,enemiesBullets[i].y, 30,30);
         }
+
+        if(enemiesBullets[i].img === 3){
+            draw.drawImage(metheorImages[enemiesBullets[i].time % 190],enemiesBullets[i].x,enemiesBullets[i].y,450,450);
+            enemiesBullets[i].time++;
+        }
+
         enemiesBullets[i].x -= enemiesBullets[i].dx + 0.7;
         enemiesBullets[i].y -= enemiesBullets[i].dy + 0.7;
         if(enemiesBullets[i].x < 0 || enemiesBullets[i].x > canvasWidth
-            || enemiesBullets[i].y < 0 || enemiesBullets[i].y > canvasHeight){
+            || enemiesBullets[i].y < -300 || enemiesBullets[i].y > canvasHeight){
             enemiesBullets.splice(i, 1);
         }
     }
@@ -463,6 +480,10 @@ function drawPlatform(){
 
             draw.drawImage(platformImages[platforms[i].type],platforms[i].x,platforms[i].y,platforms[i].width,platforms[i].height);
         }
+        if(platforms[i].type === 8){
+            draw.drawImage(homeImg,platforms[i].x,platforms[i].y,platforms[i].width,platforms[i].height);
+        }
+
         if(platforms[i].type === 9){
 
             draw.drawImage(carrotImages[Math.floor(globalTime/2) % 13],platforms[i].x,platforms[i].y,platforms[i].width + 5,platforms[i].height + 5);
@@ -472,7 +493,6 @@ function drawPlatform(){
 
 function collision(){
     for(var i in platforms) {
-
         //collision form top
         if(platforms[i].x - 5 <= playerX && playerX <= platforms[i].x + 35 && platforms[i].y - 20 <= playerY && playerY <= platforms[i].y + 10){
             if(platforms[i].type === 2 && vecJump < 5){
@@ -513,6 +533,9 @@ function collision(){
             playerY = platforms[i].y + 50;
             vecJump = 0;
         }
+        if(platforms[i].type === 8 && playerX > 1130){
+            gameEnd();
+        }
     }
 
     if(playerY > canvasHeight - 20){
@@ -549,6 +572,7 @@ function winLogic(i){
         win = 1;
         return true;
     }
+
     return false;
 }
 
@@ -581,11 +605,7 @@ function setRound(){
     console.log("라운드 : " + round + ", win = " + win);
 
     if(round === 1){
-        backgroundMusic.play().then(function() {
-            console.log("배경음악 잘나옴");
-        }).catch(function(error) {
-            console.log("배경음악 안나옴 : " + error);
-        });
+
         playerX = 150;
         platformPush(410,806);
         platformPush(440,806);
@@ -613,7 +633,7 @@ function setRound(){
         platformPush(957,525);
         platformPush(987,525);
         platformPush(1300,288);
-        enemies.push({"img":1,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":48, "hp":10});
+        enemies.push({"img":1,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":48, "hp":20});
         platformPushType(1298,160,9);
     }
 
@@ -668,6 +688,11 @@ function setRound(){
         inventory = [5,0,0];
         enemies.push({"img":2,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":86, "hp": 100});
         platformPushType(1117,454,9);
+    }
+
+    if(round === 6){
+        inventory = [0,0,0];
+        platformPushSize(1044,653,285,285,8);
     }
 }
 
@@ -760,13 +785,25 @@ function hitPlayer(){
         if(playerX <= enemies[j].x + 120 && playerX >= enemies[j].x &&
             playerY <= enemies[j].y + 130 && playerY >= enemies[j].y){
             setRound();
+            return;
         }
     }
 
     for(i = 0; i < enemiesBullets.length; i++){
+
+        if(enemiesBullets[i].img === 3){
+            if(enemiesBullets[i].x + 166 < playerX && enemiesBullets[i].x + 333 > playerX &&
+                enemiesBullets[i].y + 250 < playerY && enemiesBullets[i].y + 350 > playerY){
+                setRound();
+                return;
+            }
+        }
+
+
        if(enemiesBullets[i].x < playerX + 10 && enemiesBullets[i].x > playerX - 20 &&
            enemiesBullets[i].y > playerY - 40 && enemiesBullets[i].y < playerY + 30){
             setRound();
+            return;
         }
     }
 }
@@ -782,6 +819,11 @@ function enemyAttack(){
             enemiesBullets.push({"img":2, "x":enemies[i].x + 35, "y":enemies[i].y + 130,
                 "dx": Math.random()*(5) - 2, "dy": Math.random()*-5 + 2, "type": Math.floor(Math.random()*3)});
         }
+        if(enemies[i].img === 2 && enemies[i].time % 1000 === 0){
+            enemiesBullets.push({"img":3, "x":Math.random()*800 + 500, "y": -300,
+                "dx": Math.random() - 1.2, "dy": Math.random()*(-1) - 1, "time": 0});
+            console.log("메테오소환");
+        }
     }
 }
 
@@ -789,7 +831,7 @@ function bulletConflict(){
     for(i = 0; i < bullets.length; i++){
         for(j = 0; j < enemiesBullets.length; j++){
             if(enemiesBullets[j].x < bullets[i].x + 10 && enemiesBullets[j].x > bullets[i].x - 20 &&
-                enemiesBullets[j].y > bullets[i].y - 40 && enemiesBullets[j].y < bullets[i].y + 30){
+                enemiesBullets[j].y > bullets[i].y - 40 && enemiesBullets[j].y < bullets[i].y + 30 && enemiesBullets[j].img !== 3){
                 bullets.splice(i,1);
                 enemiesBullets.splice(j,1);
                 console.log("conflict");
@@ -808,7 +850,51 @@ function glassBreak(){
     });
 }
 
-let mainSchedule = setInterval(main, 20);
+function playBackgroundMusic(){
+    if(backgroundMusic.paused && round < 5){
+
+        if(!bossBackgroundMusic.paused){
+            bossBackgroundMusic.pause();
+        }
+
+        backgroundMusic.play().then(function() {
+            console.log("배경음악 잘나옴");
+        }).catch(function(error) {
+            console.log("배경음악 안나옴 : " + error);
+        });
+    }
+
+    if(round === 5 && bossBackgroundMusic.paused){
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+        bossBackgroundMusic.play().then(function() {
+            console.log("보스배경음악 잘나옴");
+        }).catch(function(error) {
+            console.log("보스음악 안나옴 : " + error);
+        });
+    }
+
+    if(endBackgroundMusic.paused && round === 6){
+        if(!bossBackgroundMusic.paused){
+            bossBackgroundMusic.pause();
+        }
+        endBackgroundMusic.play().then(function() {
+            console.log("엔딩배경음악 잘나옴");
+        }).catch(function(error) {
+            console.log("엔딩배경음악 안나옴 : " + error);
+        });
+
+    }
+
+}
+
+function gameEnd(){
+    playerX = -100;
+    draw.drawImage(endImg,0,0,canvasWidth,canvasHeight);
+    clearInterval(mainSchedule);
+}
+
+let mainSchedule = setInterval(main, 20); // 0.02 초 단위로 모든 함수들이 한번씩 실행됨
 
 document.body.addEventListener('keydown', (arg)=>{
     // console.log("down "+arg.code,"x:" + playerX,"y:" + playerY);

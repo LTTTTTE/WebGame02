@@ -22,3 +22,7 @@
 
  X:509 click Y:438
 click X:968 click Y:517
+
+//enemies.push({"img":2,"x":1000, "y":100, "dx":0, "dy":0, "time":0, "frame":86});
+//1 : 기본, 2 : 점프대, 3 : 밟을시 부서짐, 9 : 승리마크
+//적img1 : 불쏘시개 //적img2 보스 // 적img3 새 // 적img4 잠만보
