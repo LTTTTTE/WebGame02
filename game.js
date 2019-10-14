@@ -14,15 +14,18 @@ var playerMoveActionSpeed = 4;
 var globalTime= 0;
 var time = 0;
 var vecJump = 0;
-var platforms = [];
-var inventory = [0,1,1];
 var platformType = 7;
 var gamePause = 0;
-var intro = 1;
-var round = 5;
+var round = 0;
 var win = 1;
 
-
+var platforms = [];
+var bullets = [];
+var enemies = [];
+var hitObjects = [];
+var winFireWorks = [];
+var enemiesBullets = [];
+var inventory = [0,1,1];
 
 var backgroundMusic = new Audio("resources/music/backgroundMusic.mp3");
 backgroundMusic.controls = true;
@@ -178,18 +181,10 @@ clouds.push({"img":cloudImages[2], "x":563, "y":196, "d":-1});
 clouds.push({"img":cloudImages[1], "x":820, "y":74, "d":1});
 clouds.push({"img":cloudImages[2], "x":1112, "y":249, "d":-1});
 
-var bullets = [];
-var enemies = [];
-var hitObjects = [];
-var winFireWorks = [];
-var enemiesBullets = [];
 
-
-//enemies.push({"img":2,"x":1000, "y":100, "dx":0, "dy":0, "time":0, "frame":86});
-//1 : 기본, 2 : 점프대, 3 : 밟을시 부서짐, 9 : 승리마크
-//적img1 : 불쏘시개 //적img2 보스 // 적img3 새 // 적img4 잠만보
 function main() {
     display();
+    playBackgroundMusic();
     playerMove();
     globalTime++;
 }
@@ -202,7 +197,6 @@ function display() {
     drawCloud();
     drawBullets();
     drawEnemy();
-    playBackgroundMusic();
     hitEnemy();
     hitPlayer();
     drawHitAnimation();
@@ -214,8 +208,8 @@ function display() {
 }
 
 function playerMove() {
-    draw.beginPath();
-    draw.fillStyle = "blue";
+    // draw.beginPath();
+    // draw.fillStyle = "blue";
     gravity();
     jump();
     collision();
@@ -639,7 +633,7 @@ function setRound(){
         platformPush(957,525);
         platformPush(987,525);
         platformPush(1300,288);
-        enemies.push({"img":1,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":48, "hp":10});
+        enemies.push({"img":1,"x":1000, "y":300, "dx":0, "dy":0, "time":0, "frame":48, "hp":20});
         platformPushType(1298,160,9);
     }
 
@@ -900,7 +894,7 @@ function gameEnd(){
     clearInterval(mainSchedule);
 }
 
-let mainSchedule = setInterval(main, 20);
+let mainSchedule = setInterval(main, 20); // 0.02 초 단위로 모든 함수들이 한번씩 실행됨
 
 document.body.addEventListener('keydown', (arg)=>{
     // console.log("down "+arg.code,"x:" + playerX,"y:" + playerY);
