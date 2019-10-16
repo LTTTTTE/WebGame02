@@ -21,6 +21,7 @@ var win = 1;
 
 var mute = 0;
 var gameSpeed = 10; //default = 10
+var pikaMode = false;
 
 var platforms = [];
 var bullets = [];
@@ -75,6 +76,15 @@ for(var i = 0; i < 10; i++){
     boomImages[i].src = "resources/boom/boom" + i + ".png";
 }
 
+var pikaRightMoveImages = [];
+var pikaLeftMoveImages = [];
+for(i = 0; i < 8; i ++){
+    pikaRightMoveImages[i] = new Image();
+    pikaLeftMoveImages[i] = new Image();
+    pikaRightMoveImages[i].src = "resources/pika/pika" + i + ".png";
+    pikaLeftMoveImages[i].src = "resources/pika/pika" + i + "-1.png";
+}
+
 var platformImages = [];
 for(var j = 1; j < 6; j++){
     platformImages[j] = new Image();
@@ -125,6 +135,8 @@ for(i = 0; i < 190; i++){
 
 var backgroundImg = new Image();
 backgroundImg.src = "resources/background.jpg";
+var bossBackgroundImg = new Image();
+bossBackgroundImg.src = "resources/bossBackground.png";
 var inventoryImg = new Image();
 inventoryImg.src = "resources/inventory.png";
 var popupImg = new Image();
@@ -155,6 +167,10 @@ var unmuteImg = new Image();
 unmuteImg.src = "resources/mute/unmute.png";
 var gameSpeedImg = new Image();
 gameSpeedImg.src = "resources/gameSpeed.png";
+var pikaModeImg = new Image();
+pikaModeImg.src = "resources/pika/pikamod.png";
+var pokeballImg = new Image();
+pokeballImg.src = "resources/pika/pokeball.png";
 
 var tutoImages = [];
 for(i = 0; i < 6; i++){
@@ -246,19 +262,35 @@ function playerMove() {
 function drawPlayer() {
     var x = playerX += 5*playerDx;
     var y = playerY += playerDy;
-    if(playerHead === 1){
-        draw.drawImage(playerRightMoveImages[playerMoveTime % 10],x-20,y-20,50,45);
-        //draw.drawImage(playerHoldImgRight,x-20,y-20,50,45);
+
+    if(pikaMode){
+        if(playerHead === 1){
+            draw.drawImage(pikaLeftMoveImages[playerMoveTime % 7],x-50,y-70,100,90);
+            //draw.drawImage(playerHoldImgRight,x-20,y-20,50,45);
+        } else {
+            draw.drawImage(pikaRightMoveImages[playerMoveTime % 7],x-50,y-70,100,90);
+            //draw.drawImage(playerHoldImgLeft,x-20,y-20,50,45);
+        }
     } else {
-        draw.drawImage(playerLeftMoveImages[playerMoveTime % 10],x-20,y-20,50,45);
-        //draw.drawImage(playerHoldImgLeft,x-20,y-20,50,45);
+        if(playerHead === 1){
+            draw.drawImage(playerRightMoveImages[playerMoveTime % 10],x-20,y-20,50,45);
+            //draw.drawImage(playerHoldImgRight,x-20,y-20,50,45);
+        } else {
+            draw.drawImage(playerLeftMoveImages[playerMoveTime % 10],x-20,y-20,50,45);
+            //draw.drawImage(playerHoldImgLeft,x-20,y-20,50,45);
+        }
     }
 
     draw.fill();
 }
 
 function drawBackground() {
-    draw.drawImage(backgroundImg,0,0,canvasWidth,canvasHeight);
+    if(round === 5){
+        draw.drawImage(bossBackgroundImg,0,0,canvasWidth,canvasHeight);
+    } else {
+        draw.drawImage(backgroundImg, 0, 0, canvasWidth, canvasHeight);
+    }
+
 }
 
 function drawPopup() {
@@ -294,7 +326,11 @@ function drawCloud() {
 
 function drawBullets() {
     for(i = 0; i < bullets.length; i++){
-        draw.drawImage(bullets[i].img,bullets[i].x,bullets[i].y,30,30);
+        if(pikaMode){
+            draw.drawImage(pokeballImg,bullets[i].x,bullets[i].y,30,30);
+        } else {
+            draw.drawImage(bullets[i].img,bullets[i].x,bullets[i].y,30,30);
+        }
         bullets[i].x += bullets[i].dx;
         bullets[i].dy += bullets[i].time * bullets[i].time * 25;
         bullets[i].y += bullets[i].dy;
@@ -417,6 +453,9 @@ function drawTutorial() {
 
 function drawIntro() {
     draw.drawImage(introImg,331,86,800,500);
+    if(!pikaMode){
+        draw.drawImage(pikaModeImg,0,0,40,30);
+    }
 }
 
 function gravity() {
@@ -839,7 +878,7 @@ function enemyAttack(){
                 "dx": Math.random()*(5) - 2, "dy": Math.random()*-5 + 2, "type": Math.floor(Math.random()*3)});
         }
         if(enemies[i].img === 2 && enemies[i].time % 1000 === 0){
-            enemiesBullets.push({"img":3, "x":Math.random()*800 + 500, "y": -300,
+            enemiesBullets.push({"img":3, "x":Math.random()*600 + 400, "y": -300,
                 "dx": Math.random() - 1.2, "dy": Math.random()*(-1) - 1, "time": 0});
             console.log("메테오소환");
         }
@@ -1080,6 +1119,9 @@ canvas.addEventListener('click',(arg)=>{
         round++;
         win = 0;
         setRound();
+    }
+    if(round === 0 && arg.clientX <= 25 && arg.clientY <= 25){
+        pikaMode = true;
     }
     if(gamePause === 1 || round === 0){
         return;
