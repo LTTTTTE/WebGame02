@@ -16,7 +16,7 @@ var time = 0;
 var vecJump = 0;
 var platformType = 7;
 var gamePause = 0;
-var round = 0;
+var round = 5;
 var win = 1;
 
 var platforms = [];
@@ -144,6 +144,8 @@ var homeImg = new Image();
 homeImg.src = "resources/home.png";
 var endImg = new Image();
 endImg.src = "resources/endImg3.png";
+var timeImg = new Image();
+timeImg.src = "resources/tutorial/time.png";
 
 var tutoImages = [];
 for(i = 0; i < 6; i++){
@@ -194,6 +196,7 @@ function display() {
     drawPlatform();
     drawInventory();
     drawTutorial();
+    drawTimer();
     drawCloud();
     drawBullets();
     drawEnemy();
@@ -208,8 +211,6 @@ function display() {
 }
 
 function playerMove() {
-    // draw.beginPath();
-    // draw.fillStyle = "blue";
     gravity();
     jump();
     collision();
@@ -415,7 +416,6 @@ function gravity() {
         playerDy = 0;
         time = 0;
     }
-
 }
 
 function jump() {
@@ -681,7 +681,7 @@ function setRound(){
         platformPush(136, 429);
         platformPush(166, 429);
         platformPush(196, 429);
-        platformPushType(1450,80,9);
+        platformPushType(1450,150,9);
     }
 
     if(round === 5) {
@@ -889,9 +889,33 @@ function playBackgroundMusic(){
 }
 
 function gameEnd(){
+    gameRank();
     playerX = -100;
     draw.drawImage(endImg,0,0,canvasWidth,canvasHeight);
+    draw.fillStyle = "#000000";
+    draw.font = '50px Fantasy';
+    draw.textBaseline = "top";
+    draw.fillText("클리어 시간 : " + Math.floor(globalTime / 50) + "초", 1000,389);
+    draw.fillText("게임내 최단시간 : " + localStorage.getItem("high")  + "초", 900,470);
     clearInterval(mainSchedule);
+}
+
+function drawTimer(){
+    draw.drawImage(timeImg,1400, 5, 120, 120);
+    draw.fillStyle = "#000000";
+    draw.font = '20px Fantasy';
+    draw.textBaseline = "top";
+    draw.fillText(Math.floor(globalTime / 50) + "초", 1440,80);
+
+}
+
+function gameRank(){
+    if(localStorage.getItem("high") === null) {
+        localStorage.setItem("high", "20");
+    }
+    if(parseInt(localStorage.getItem("high")) > Math.floor(globalTime / 50)){
+        localStorage.setItem("high", Math.floor(globalTime / 50) + "");
+    }
 }
 
 let mainSchedule = setInterval(main, 20); // 0.02 초 단위로 모든 함수들이 한번씩 실행됨
