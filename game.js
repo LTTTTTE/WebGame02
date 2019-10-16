@@ -16,8 +16,10 @@ var time = 0;
 var vecJump = 0;
 var platformType = 7;
 var gamePause = 0;
-var round = 5;
+var round = 0;
 var win = 1;
+
+var mute = 0;
 
 var platforms = [];
 var bullets = [];
@@ -146,6 +148,10 @@ var endImg = new Image();
 endImg.src = "resources/endImg3.png";
 var timeImg = new Image();
 timeImg.src = "resources/tutorial/time.png";
+var muteImg = new Image();
+muteImg.src = "resources/mute/mute.png";
+var unmuteImg = new Image();
+unmuteImg.src = "resources/mute/unmute.png";
 
 var tutoImages = [];
 for(i = 0; i < 6; i++){
@@ -197,6 +203,7 @@ function display() {
     drawInventory();
     drawTutorial();
     drawTimer();
+    drawMute();
     drawCloud();
     drawBullets();
     drawEnemy();
@@ -445,11 +452,13 @@ function addPlatform(x, y){
     if(platformType === 9) {
         platforms.push({"x": x - 15, "y": y - 15, "width": 30, "height": 30, "type" : 9});
     }
-    blockPlaceMusic.play().then(function() {
-        console.log("블록설치음악 잘나옴");
-    }).catch(function(error) {
-        console.log("블록설치음악 안나옴 : " + error);
-    });
+    if(!mute){
+        blockPlaceMusic.play().then(function() {
+            console.log("블록설치음악 잘나옴");
+        }).catch(function(error) {
+            console.log("블록설치음악 안나옴 : " + error);
+        });
+    }
     canvas.style.cursor = "url(''),auto";
     platformType = 0;
 }
@@ -544,12 +553,14 @@ function collision(){
 }
 
 function jumpPlatform(){
-    bounceMusics[bounceMusics[3]%3].play().then(function() {
-        console.log("바운스음악 잘나옴");
-        bounceMusics[3]++;
-    }).catch(function(error) {
-        console.log("바운스음악 안나옴 : " + error);
-    });
+    if(!mute) {
+        bounceMusics[bounceMusics[3] % 3].play().then(function () {
+            console.log("바운스음악 잘나옴");
+            bounceMusics[3]++;
+        }).catch(function (error) {
+            console.log("바운스음악 안나옴 : " + error);
+        });
+    }
     time = 0;
     vecJump = 75;
 }
@@ -562,11 +573,13 @@ function breakPlatform(){
 function winLogic(i){
     if(platforms[i].type === 9){
         console.log("winRound");
-        winMusic.play().then(function() {
-            console.log("승리음악 잘나옴");
-        }).catch(function(error) {
-            console.log("승리음악 안나옴 : " + error);
-        });
+        if(!mute) {
+            winMusic.play().then(function () {
+                console.log("승리음악 잘나옴");
+            }).catch(function (error) {
+                console.log("승리음악 안나옴 : " + error);
+            });
+        }
         winFireWorks.push({"x":platforms[i].x - 250, "y":platforms[i].y - 150, "time":0, "temp":0, "type":1});
         platforms.splice(i,1);
         win = 1;
@@ -708,12 +721,13 @@ function platformPushSize(x,y,w,h,t){
 
 function playerShot(x,y){
     if(bullets.length < 3){
-
-        throwMusics[globalTime % 10].play().then(function() {
-            console.log("던지기음악 잘나옴");
-        }).catch(function(error) {
-            console.log("던지기음악 안나옴 : " + error);
-        });
+        if(!mute) {
+            throwMusics[globalTime % 10].play().then(function () {
+                console.log("던지기음악 잘나옴");
+            }).catch(function (error) {
+                console.log("던지기음악 안나옴 : " + error);
+            });
+        }
 
         console.log("playerBulletsPush");
         var bulletPosX = (x-playerX);
@@ -772,6 +786,7 @@ function enemyHitAnimation(x,y){
 }
 
 function enemyHitMusic() {
+    if(mute) return;
     hitMusics[hitMusics[15]%15].play().then(function() {
         hitMusics[15]++;
         console.log("hit 음악 잘나옴");
@@ -842,6 +857,8 @@ function bulletConflict(){
 }
 
 function glassBreak(){
+    if(mute)return;
+
     glassBreakMusics[glassBreakMusics[6] % 6].play().then(function() {
         glassBreakMusics[6]++;
         console.log("glass Break 음악 잘나옴");
@@ -851,7 +868,8 @@ function glassBreak(){
 }
 
 function playBackgroundMusic(){
-    if(backgroundMusic.paused && round < 5){
+
+    if(backgroundMusic.paused && round < 5 && !mute){
 
         if(!bossBackgroundMusic.paused){
             bossBackgroundMusic.pause();
@@ -864,7 +882,7 @@ function playBackgroundMusic(){
         });
     }
 
-    if(round === 5 && bossBackgroundMusic.paused){
+    if(round === 5 && bossBackgroundMusic.paused && !mute){
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0;
         bossBackgroundMusic.play().then(function() {
@@ -874,10 +892,11 @@ function playBackgroundMusic(){
         });
     }
 
-    if(endBackgroundMusic.paused && round === 6){
+    if(endBackgroundMusic.paused && round === 6 && !mute){
         if(!bossBackgroundMusic.paused){
             bossBackgroundMusic.pause();
         }
+        backgroundMusic.pause();
         endBackgroundMusic.play().then(function() {
             console.log("엔딩배경음악 잘나옴");
         }).catch(function(error) {
@@ -901,12 +920,12 @@ function gameEnd(){
 }
 
 function drawTimer(){
+    if(round === 0) return;
     draw.drawImage(timeImg,1400, 5, 120, 120);
     draw.fillStyle = "#000000";
     draw.font = '20px Fantasy';
     draw.textBaseline = "top";
     draw.fillText(Math.floor(globalTime / 50) + "초", 1440,80);
-
 }
 
 function gameRank(){
@@ -915,6 +934,35 @@ function gameRank(){
     }
     if(parseInt(localStorage.getItem("high")) > Math.floor(globalTime / 50)){
         localStorage.setItem("high", Math.floor(globalTime / 50) + "");
+    }
+}
+
+function drawMute() {
+    if(round === 0) return;
+
+    if(mute){
+        draw.drawImage(muteImg,518,25,55,50);
+    } else {
+        draw.drawImage(unmuteImg,518,25,55,50);
+    }
+
+}
+
+function muteLogic(){
+    if(!mute){
+        console.log("mute");
+        mute = 1;
+        backgroundMusic.pause();
+        bossBackgroundMusic.pause();
+        endBackgroundMusic.pause();
+    } else {
+        console.log("unMute");
+        mute = 0;
+        backgroundMusic.play().then(function() {
+            console.log("배경음악 일시정지후 나옴");
+        }).catch(function(error) {
+            console.log("배경음악 일시정지후 안나옴 : " + error);
+        });
     }
 }
 
@@ -967,11 +1015,13 @@ document.body.addEventListener('keydown', (arg)=>{
         if(playerDy < 0.01 && vecJump < 0.1){
             time = 0;
             vecJump = 50;
-            jumpMusic.play().then(function() {
-                console.log("점프음악 잘나옴");
-            }).catch(function(error) {
-                console.log("점프음악 안나옴 : " + error);
-            });
+            if(!mute) {
+                jumpMusic.play().then(function () {
+                    console.log("점프음악 잘나옴");
+                }).catch(function (error) {
+                    console.log("점프음악 안나옴 : " + error);
+                });
+            }
         } else {
             //console.log("점프불가" + playerDy , vecJump)
         }
@@ -1015,6 +1065,11 @@ canvas.addEventListener('click',(arg)=>{
         return;
     }
 
+    if(arg.clientX >= 518 && arg.clientX <= 573 && arg.clientY >= 25 && arg.clientY <= 75){
+        console.log("hi");
+        muteLogic();
+    }
+
     if(arg.clientX < 400 && arg.clientY < 90){
         if(arg.clientX >= 70 && arg.clientX <= 114 && arg.clientY >= 28 && arg.clientY <= 68){
             platformType = 1;
@@ -1034,6 +1089,7 @@ canvas.addEventListener('click',(arg)=>{
             canvas.style.cursor = "url('resources/cursor/platform3.cur'),auto";
             return;
         }
+
         canvas.style.cursor = "url(''),auto";
         platformType = 0;
         return;
