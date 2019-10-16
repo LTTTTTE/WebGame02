@@ -20,6 +20,7 @@ var round = 0;
 var win = 1;
 
 var mute = 0;
+var gameSpeed = 10; //default = 10
 
 var platforms = [];
 var bullets = [];
@@ -152,6 +153,8 @@ var muteImg = new Image();
 muteImg.src = "resources/mute/mute.png";
 var unmuteImg = new Image();
 unmuteImg.src = "resources/mute/unmute.png";
+var gameSpeedImg = new Image();
+gameSpeedImg.src = "resources/gameSpeed.png";
 
 var tutoImages = [];
 for(i = 0; i < 6; i++){
@@ -201,6 +204,7 @@ function display() {
     drawBackground();
     drawPlatform();
     drawInventory();
+    drawSpeedChanger()
     drawTutorial();
     drawTimer();
     drawMute();
@@ -966,7 +970,23 @@ function muteLogic(){
     }
 }
 
-let mainSchedule = setInterval(main, 20); // 0.02 초 단위로 모든 함수들이 한번씩 실행됨
+function drawSpeedChanger() {
+    if(round === 0) return;
+    draw.drawImage(gameSpeedImg,20,100,150,60);
+}
+
+function speedChanger(x){
+    gameSpeed += x;
+    if(gameSpeed <= 0)
+        gameSpeed = 0;
+    if(gameSpeed >= 20)
+        gameSpeed = 20;
+    console.log(gameSpeed);
+    clearInterval(mainSchedule);
+    mainSchedule = setInterval(main, gameSpeed + 10);
+}
+
+let mainSchedule = setInterval(main, 10 + gameSpeed); // 0.02 초 단위로 모든 함수들이 한번씩 실행됨
 
 document.body.addEventListener('keydown', (arg)=>{
     // console.log("down "+arg.code,"x:" + playerX,"y:" + playerY);
@@ -1034,7 +1054,7 @@ document.body.addEventListener('keydown', (arg)=>{
             clearInterval(mainSchedule);
         } else {
             gamePause = 0;
-            mainSchedule = setInterval(main, 20);
+            mainSchedule = setInterval(main, gameSpeed + 10);
         }
     }
 });
@@ -1063,6 +1083,14 @@ canvas.addEventListener('click',(arg)=>{
     }
     if(gamePause === 1 || round === 0){
         return;
+    }
+    if(arg.clientX >= 20 && arg.clientX <= 95 && arg.clientY >= 100 && arg.clientY <= 160) {
+        console.log("speedChanged -1");
+        speedChanger(-1);
+    }
+    if(arg.clientX >= 95 && arg.clientX <= 170 && arg.clientY >= 100 && arg.clientY <= 160){
+        console.log("speedChanged + 1");
+        speedChanger(1);
     }
 
     if(arg.clientX >= 518 && arg.clientX <= 573 && arg.clientY >= 25 && arg.clientY <= 75){
