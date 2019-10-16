@@ -16,7 +16,7 @@ var time = 0;
 var vecJump = 0;
 var platformType = 7;
 var gamePause = 0;
-var round = 4;
+var round = 0;
 var win = 1;
 
 var mute = 0;
